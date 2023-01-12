@@ -82,19 +82,13 @@ func (crawler *Crawler) CloseGoroutine() {
 	crawler.wg.Done()
 }
 
-// TODO: Remove invocation limit
-var called int = 0
-
 func (crawler *Crawler) VisitPageContext(context PageContext) {
 	if !crawler.ShouldVisit(context) {
 		return
 	}
 
-	called += 1
-	if called <= 20 {
-		crawler.OpenGoroutine()
-		go crawler.VisitPageContextGoroutine(context)
-	}
+	crawler.OpenGoroutine()
+	go crawler.VisitPageContextGoroutine(context)
 }
 
 func (crawler *Crawler) RequestPageContext(context *PageContext) {
