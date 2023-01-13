@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/url"
@@ -39,11 +40,6 @@ func GetLocalFilepath(context ScrapeContext) string {
 }
 
 func GetRelativeFilepath(context ScrapeContext, targetContext ScrapeContext) string {
-	if targetContext.IsRel() {
-		rel := targetContext.String()
-		return util.SafeFilepath(rel)
-	}
-
 	localFilepath := GetLocalFilepath(context)
 	localDirpath := filepath.Dir(localFilepath)
 	targetFilepath := GetLocalFilepath(targetContext)
@@ -107,6 +103,9 @@ func ScrapeOnVisit(docDirectoryPath string) func(*crawl.Crawler, crawl.PageConte
 
 		directories := filepath.Dir(localFilepath)
 		err := os.MkdirAll(directories, os.ModeDir)
+		if err != nil {
+			fmt.Println(crawler, context, localFilepath, directories)
+		}
 		util.Check(err)
 
 		file, err := os.Create(localFilepath)
@@ -132,6 +131,6 @@ func ScrapeDocumentation(rawRootUrl string) {
 	}
 
 	onVisit := ScrapeOnVisit(docDirectoryPath)
-	crawler := crawl.NewCrawler(rootUrl, onVisit, 1, 1)
+	crawler := crawl.NewCrawler(rootUrl, onVisit, 3, 5)
 	crawler.Run()
 }

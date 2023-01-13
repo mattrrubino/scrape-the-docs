@@ -21,6 +21,7 @@ func SafeFilepath(path string) string {
 	re, err := regexp.Compile("[<>:\"|?*]")
 	Check(err)
 
+	// TODO: Fix adding ".html" to end of directory names
 	safePath := re.ReplaceAllString(path, "%")
 	if safePath != "" && filepath.Ext(safePath) == "" && !strings.HasSuffix(safePath, "/") {
 		safePath += ".html"

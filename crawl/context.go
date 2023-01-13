@@ -46,10 +46,24 @@ func (context *PageContext) IsRel() bool {
 	return !context.IsAbs() && !strings.HasPrefix(context.String(), "/")
 }
 
-func (context *PageContext) NextPageContext(url *url.URL) *PageContext {
+func (context *PageContext) NextPageContext(href *url.URL) *PageContext {
 	nextContext := *context
-	nextContext.URL = url
 	nextContext.depth += 1
+
+	if href.IsAbs() {
+		nextContext.URL = href
+	} else if strings.HasPrefix(href.String(), "/") {
+		rawUrl, err := url.JoinPath(href.String()[1:])
+		util.Check(err)
+
+		nextContext.URL = util.ValidateRawUrl(rawUrl)
+	} else {
+		dirPath := filepath.Dir(context.String())
+		rawUrl, err := url.JoinPath(dirPath, href.String())
+		util.Check(err)
+
+		nextContext.URL = util.ValidateRawUrl(rawUrl)
+	}
 
 	return &nextContext
 }

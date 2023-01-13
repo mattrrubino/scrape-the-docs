@@ -3,5 +3,5 @@ package main
 import "matthewrubino.com/scrape/scrape"
 
 func main() {
-	scrape.ScrapeDocumentation("https://localhost:8080")
+	scrape.ScrapeDocumentation("http://localhost/")
 }

@@ -134,7 +134,7 @@ func (crawler *Crawler) EscapesRootUrl(context PageContext) bool {
 	urlString, err := url.JoinPath(crawlerString, contextString)
 	util.Check(err)
 
-	return !strings.Contains(urlString, crawler.String())
+	return !strings.Contains(urlString, crawlerString)
 }
 
 func (crawler *Crawler) IsDir(context PageContext) bool {
