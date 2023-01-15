@@ -38,8 +38,6 @@ func IsDir(path string) bool {
 	return path == "" || strings.HasSuffix(path, "/")
 }
 
-// TODO: Fix rewrite link commands
-// TODO: Fix crawling of absolute contexts (or verify that it didn't happen)
 func KnownFiletype(path string) bool {
 	ext := strings.ToLower(filepath.Ext(path))[1:]
 	ftype := filetype.GetType(ext)

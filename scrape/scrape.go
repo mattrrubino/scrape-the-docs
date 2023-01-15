@@ -97,6 +97,8 @@ func WriteScrapeContextToFile(context ScrapeContext, file *os.File) {
 
 func ScrapeOnVisit(docDirectoryPath string) func(*crawl.Crawler, crawl.PageContext) {
 	onVisit := func(crawler *crawl.Crawler, context crawl.PageContext) {
+		log.Printf("Scraping %s\n", crawler.GetUrlString(context))
+
 		scrapeContext := ScrapeContext{context, crawler, docDirectoryPath}
 		localFilepath := GetLocalFilepath(scrapeContext)
 
@@ -122,11 +124,21 @@ func ScrapeDocumentation(rawRootUrl string) {
 
 	if os.IsExist(err) {
 		log.Printf("Documentation directory for %s already exists: %s\n", rawRootUrl, docDirectoryPath)
-		log.Printf("If you intend to rescrape this endpoint, you must first delete this directory.\n")
+		log.Printf("If you intend to rescrape this endpoint, you must first delete this directory\n")
 		return
 	}
+
+	log.Printf("\n")
+	log.Printf("Scrape the Docs!\n")
+	log.Printf("Version 1.0\n\n")
+	log.Printf("Scraping documentation at %s to %s\n\n", rawRootUrl, docDirectoryPath)
 
 	onVisit := ScrapeOnVisit(docDirectoryPath)
 	crawler := crawl.NewCrawler(rootUrl, onVisit, 3, 5)
 	crawler.Run()
+
+	log.Printf("\n")
+	log.Printf("Scraping complete!\n")
+	log.Printf("Documentation root available at %s", filepath.Join(docDirectoryPath, "index.html"))
+	log.Printf("\n")
 }
