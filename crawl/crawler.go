@@ -22,26 +22,12 @@ type Crawler struct {
 	resource      chan int                    // Channel used for regulating number of concurrent goroutines
 }
 
-func PreprocessRootUrl(rootUrl *url.URL) *url.URL {
-	rootUrlString := rootUrl.String()
-
-	// Crawler requires root URL to specify a directory (indicated by the suffix "/")
-	if !strings.HasSuffix(rootUrlString, "/") {
-		rootUrlString += "/"
-	}
-
-	newRootUrl, err := url.Parse(rootUrlString)
-	util.Check(err)
-
-	return newRootUrl
-}
-
 func NewCrawler(rootUrl *url.URL, onVisit func(*Crawler, PageContext), maxDepth int, maxGoroutines int) *Crawler {
 	visited := NewSafeSet[string]()
 	wg := &sync.WaitGroup{}
 	resource := make(chan int, maxGoroutines)
 
-	return &Crawler{PreprocessRootUrl(rootUrl), visited, wg, onVisit, maxDepth, maxGoroutines, resource}
+	return &Crawler{rootUrl, visited, wg, onVisit, maxDepth, maxGoroutines, resource}
 }
 
 func (crawler *Crawler) Run() *Crawler {
@@ -96,11 +82,14 @@ func (crawler *Crawler) CloseGoroutine() {
 	crawler.wg.Done()
 }
 
+var count int = 0
+
 func (crawler *Crawler) VisitPageContext(context PageContext) {
-	if !crawler.ShouldVisit(context) {
+	if !crawler.ShouldVisit(context) || count >= 20 {
 		return
 	}
 
+	count += 1
 	crawler.OpenGoroutine()
 	go crawler.VisitPageContextGoroutine(context)
 }

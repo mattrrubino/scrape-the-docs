@@ -1,7 +1,6 @@
 package scrape
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/url"
@@ -15,7 +14,7 @@ import (
 )
 
 func CreateDocDirectory(rootUrl *url.URL) (string, error) {
-	subdir := rootUrl.Hostname() + rootUrl.EscapedPath()
+	subdir := rootUrl.Hostname() + rootUrl.EscapedPath() + "/"
 	docDirectoryPath := filepath.Join("documentation", util.SafeFilepath(subdir))
 
 	if _, err := os.Stat(docDirectoryPath); !os.IsNotExist(err) {
@@ -103,9 +102,6 @@ func ScrapeOnVisit(docDirectoryPath string) func(*crawl.Crawler, crawl.PageConte
 
 		directories := filepath.Dir(localFilepath)
 		err := os.MkdirAll(directories, os.ModeDir)
-		if err != nil {
-			fmt.Println(crawler, context, localFilepath, directories)
-		}
 		util.Check(err)
 
 		file, err := os.Create(localFilepath)

@@ -50,6 +50,12 @@ func (context *PageContext) NextPageContext(href *url.URL) *PageContext {
 	nextContext := *context
 	nextContext.depth += 1
 
+	// Prevent page context from becoming a directory
+	hrefString := strings.TrimSuffix(href.String(), "/")
+	newHref, err := url.Parse(hrefString)
+	util.Check(err)
+	href = newHref
+
 	if href.IsAbs() {
 		nextContext.URL = href
 	} else if strings.HasPrefix(href.String(), "/") {
