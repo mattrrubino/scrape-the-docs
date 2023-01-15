@@ -8,8 +8,25 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/h2non/filetype"
 	"golang.org/x/net/html"
 )
+
+func Init() {
+	filetype.AddType("html", "text/html")
+	filetype.AddType("htm", "text/html")
+	filetype.AddType("csv", "text/csv")
+	filetype.AddType("js", "text/javascript")
+	filetype.AddType("mjs", "text/javascript")
+	filetype.AddType("css", "text/css")
+	filetype.AddType("txt", "text/plain")
+	filetype.AddType("xhtml", "application/xhtml+xml")
+	filetype.AddType("xml", "application/xml")
+	filetype.AddType("zip", "application/zip")
+	filetype.AddType("json", "application/json")
+	filetype.AddType("jpeg", "image/jpeg")
+	filetype.AddType("svg", "image/svg+xml")
+}
 
 func Check(e error) {
 	if e != nil {
@@ -21,25 +38,13 @@ func IsDir(path string) bool {
 	return path == "" || strings.HasSuffix(path, "/")
 }
 
-// TODO: Use filetype package
-// TODO: Fix links not gaining .html extension (despite being gained by local files)
+// TODO: Fix rewrite link commands
 // TODO: Fix crawling of absolute contexts (or verify that it didn't happen)
-func ShouldAddHtmlExtension(path string) bool {
-	ext := strings.ToLower(filepath.Ext(path))
-	knownExt := map[string]bool{
-		".js":    true,
-		".css":   true,
-		".html":  true,
-		".xhtml": true,
-		".xml":   true,
-		".csv":   true,
-		".gif":   true,
-		".jpg":   true,
-		".jpeg":  true,
-		".png":   true,
-	}
+func KnownFiletype(path string) bool {
+	ext := strings.ToLower(filepath.Ext(path))[1:]
+	ftype := filetype.GetType(ext)
 
-	return !IsDir(path) && !knownExt[ext]
+	return ftype != filetype.Unknown || IsDir(path)
 }
 
 func SafeFilepath(path string) string {
@@ -48,7 +53,9 @@ func SafeFilepath(path string) string {
 
 	noQuery := strings.Split(path, "?")[0]
 	safePath := re.ReplaceAllString(noQuery, "%")
-	if ShouldAddHtmlExtension(safePath) {
+
+	// Need explicit .html extension in local filesystem
+	if !KnownFiletype(safePath) {
 		safePath += ".html"
 	}
 
