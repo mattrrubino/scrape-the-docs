@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-func Init() {
+func init() {
 	filetype.AddType("html", "text/html")
 	filetype.AddType("htm", "text/html")
 	filetype.AddType("csv", "text/csv")
@@ -39,7 +39,12 @@ func IsDir(path string) bool {
 }
 
 func KnownFiletype(path string) bool {
-	ext := strings.ToLower(filepath.Ext(path))[1:]
+	ext := strings.ToLower(filepath.Ext(path))
+
+	// Remove period to match extension format used by filetype package
+	if ext != "" {
+		ext = ext[1:]
+	}
 	ftype := filetype.GetType(ext)
 
 	return ftype != filetype.Unknown || IsDir(path)

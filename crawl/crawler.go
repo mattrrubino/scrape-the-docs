@@ -1,6 +1,7 @@
 package crawl
 
 import (
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,6 +24,14 @@ type Crawler struct {
 }
 
 func NewCrawler(rootUrl *url.URL, onVisit func(*Crawler, PageContext), maxDepth int, maxGoroutines int) *Crawler {
+	if maxDepth < 0 || maxDepth > 20 {
+		log.Fatalf("Invalid maximum depth value: %v. Must specify a value in [0, 20].\n", maxDepth)
+	}
+
+	if maxGoroutines < 1 || maxGoroutines > 20 {
+		log.Fatalf("Invalid maximum concurrent requests value: %v. Must specify a value in [1, 20].\n", maxDepth)
+	}
+
 	visited := NewSafeSet[string]()
 	wg := &sync.WaitGroup{}
 	resource := make(chan int, maxGoroutines)

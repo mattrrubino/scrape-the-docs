@@ -1,6 +1,7 @@
 package scrape
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/url"
@@ -118,27 +119,28 @@ func ScrapeOnVisit(docDirectoryPath string) func(*crawl.Crawler, crawl.PageConte
 // Scrapes documentation for the input documentation root.
 // Function panics if the input string is a malformed URL
 // or if the supplied URL does not respond.
-func ScrapeDocumentation(rawRootUrl string) {
+func ScrapeDocumentation(rawRootUrl string, maxDepth int, maxGoroutines int) {
 	rootUrl := util.ValidateRawUrl(rawRootUrl)
 	docDirectoryPath, err := CreateDocDirectory(rootUrl)
 
+	fmt.Println()
+	fmt.Println("Scrape the Docs!")
+	fmt.Println("Version 1.0")
+
 	if os.IsExist(err) {
-		log.Printf("Documentation directory for %s already exists: %s\n", rawRootUrl, docDirectoryPath)
-		log.Printf("If you intend to rescrape this endpoint, you must first delete this directory\n")
+		fmt.Printf("Documentation directory for %s already exists: %s\n", rawRootUrl, docDirectoryPath)
+		fmt.Println("If you intend to rescrape this endpoint, you must first delete this directory")
 		return
 	}
 
-	log.Printf("\n")
-	log.Printf("Scrape the Docs!\n")
-	log.Printf("Version 1.0\n\n")
-	log.Printf("Scraping documentation at %s to %s\n\n", rawRootUrl, docDirectoryPath)
+	fmt.Printf("Scraping documentation at %s to %s\n\n", rawRootUrl, docDirectoryPath)
 
 	onVisit := ScrapeOnVisit(docDirectoryPath)
-	crawler := crawl.NewCrawler(rootUrl, onVisit, 3, 5)
+	crawler := crawl.NewCrawler(rootUrl, onVisit, maxDepth, maxGoroutines)
 	crawler.Run()
 
-	log.Printf("\n")
-	log.Printf("Scraping complete!\n")
-	log.Printf("Documentation root available at %s", filepath.Join(docDirectoryPath, "index.html"))
-	log.Printf("\n")
+	fmt.Println()
+	fmt.Println("Scraping complete!")
+	fmt.Printf("Documentation root available at %s", filepath.Join(docDirectoryPath, "index.html"))
+	fmt.Println()
 }
