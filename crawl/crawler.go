@@ -82,14 +82,11 @@ func (crawler *Crawler) CloseGoroutine() {
 	crawler.wg.Done()
 }
 
-var count int = 0
-
 func (crawler *Crawler) VisitPageContext(context PageContext) {
-	if !crawler.ShouldVisit(context) || count >= 20 {
+	if !crawler.ShouldVisit(context) {
 		return
 	}
 
-	count += 1
 	crawler.OpenGoroutine()
 	go crawler.VisitPageContextGoroutine(context)
 }
