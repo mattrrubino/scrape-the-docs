@@ -172,18 +172,12 @@ func (crawler *Crawler) CrawlHtmlPageContext(context PageContext, node *html.Nod
 		crawler.CrawlHtmlPageContext(context, child)
 	}
 
-	crawlKey := util.GetCrawlKey(node)
-	if crawlKey == "" {
+	crawlAttr := util.GetCrawlAttr(node)
+	if crawlAttr == nil {
 		return
 	}
 
-	for _, a := range node.Attr {
-		if a.Key == crawlKey {
-			url := util.ValidateRawUrl(a.Val)
-			newContext := context.NextPageContext(url)
-			crawler.VisitPageContext(*newContext)
-
-			break
-		}
-	}
+	url := util.ValidateRawUrl(crawlAttr.Val)
+	newContext := context.NextPageContext(url)
+	crawler.VisitPageContext(*newContext)
 }

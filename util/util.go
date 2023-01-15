@@ -79,7 +79,7 @@ func ValidateRawHtml(rawHtml io.Reader) *html.Node {
 	return node
 }
 
-func GetCrawlKey(node *html.Node) string {
+func GetCrawlAttr(node *html.Node) *html.Attribute {
 	crawlKey := ""
 
 	if node.Data == "link" || node.Data == "a" {
@@ -88,5 +88,11 @@ func GetCrawlKey(node *html.Node) string {
 		crawlKey = "src"
 	}
 
-	return crawlKey
+	for i, a := range node.Attr {
+		if a.Key == crawlKey {
+			return &node.Attr[i]
+		}
+	}
+
+	return nil
 }

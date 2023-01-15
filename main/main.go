@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
@@ -22,7 +21,6 @@ func main() {
 	// => need to remove one argument to force parsing
 	os.Args = os.Args[1:]
 	flag.Parse()
-	fmt.Println(*maxDepth, *maxGoroutines)
 
 	scrape.ScrapeDocumentation(rootUrl, *maxDepth, *maxGoroutines)
 }

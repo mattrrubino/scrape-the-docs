@@ -55,24 +55,23 @@ func ShouldUpdateCrawlKeys(context ScrapeContext) bool {
 }
 
 func UpdateCrawlKeys(context ScrapeContext, node *html.Node) {
+	if node.Data == "body" {
+		InjectJavaScript(context, node)
+	}
+
+	crawlAttr := util.GetCrawlAttr(node)
+	UpdateCrawlKey(context, crawlAttr)
+
 	for child := node.FirstChild; child != nil; child = child.NextSibling {
 		UpdateCrawlKeys(context, child)
-	}
-
-	crawlKey := util.GetCrawlKey(node)
-	if crawlKey == "" {
-		return
-	}
-
-	for i, a := range node.Attr {
-		if a.Key == crawlKey {
-			UpdateCrawlKey(context, &node.Attr[i])
-			break
-		}
 	}
 }
 
 func UpdateCrawlKey(context ScrapeContext, a *html.Attribute) {
+	if a == nil {
+		return
+	}
+
 	url := util.ValidateRawUrl(a.Val)
 	targetContext := context.NextScrapeContext(url)
 	a.Val = GetRelativeFilepath(context, *targetContext)
@@ -94,6 +93,25 @@ func WriteScrapeContextToFile(context ScrapeContext, file *os.File) {
 		_, err := io.Copy(file, body)
 		util.Check(err)
 	}
+}
+
+func InjectJavaScript(context ScrapeContext, node *html.Node) {
+	child := &html.Node{
+		Type: html.ElementNode,
+		Data: "script",
+		Attr: []html.Attribute{
+			{Key: "src", Val: "/__inject__.js"},
+			{Key: "type", Val: "text/javascript"},
+			{Key: "defer"},
+		},
+	}
+
+	node.AppendChild(child)
+}
+
+func CreateInjectJavaScriptFile(docDirectoryPath string) (*os.File, error) {
+	path := filepath.Join(docDirectoryPath, "__inject__.js")
+	return os.Create(path)
 }
 
 func ScrapeOnVisit(docDirectoryPath string) func(*crawl.Crawler, crawl.PageContext) {
@@ -134,6 +152,10 @@ func ScrapeDocumentation(rawRootUrl string, maxDepth int, maxGoroutines int) {
 	}
 
 	fmt.Printf("Scraping documentation at %s to %s\n\n", rawRootUrl, docDirectoryPath)
+	fmt.Println("Creating __inject__.js")
+
+	_, err = CreateInjectJavaScriptFile(docDirectoryPath)
+	util.Check(err)
 
 	onVisit := ScrapeOnVisit(docDirectoryPath)
 	crawler := crawl.NewCrawler(rootUrl, onVisit, maxDepth, maxGoroutines)
